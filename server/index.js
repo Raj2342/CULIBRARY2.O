@@ -27,7 +27,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 // file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads");
+    cb(null, "../client/uploads");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + file.originalname);
