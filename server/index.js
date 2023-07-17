@@ -54,7 +54,7 @@ app.post(
             VALUES(?,?,?,?,?,?)`,
         [title, desc, image, pdf, genre, author]
       );
-      res.redirect("http://localhost:5173/");
+      res.json("book created");
     } catch (error) {
       res.json(error);
     }
