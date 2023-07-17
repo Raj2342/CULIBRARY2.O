@@ -62,9 +62,17 @@ app.post(
 );
 
 app.get("/api/books", async (req, res) => {
+  const Searchquery = req.query.genre;
   try {
-    const [rows] = await connection.promise().execute("SELECT * FROM books");
-    res.json(rows);
+    if (Searchquery) {
+      const [rows] = await connection
+        .promise()
+        .execute("SELECT * FROM books WHERE genre=?", [Searchquery]);
+      res.json(rows);
+    } else {
+      const [rows] = await connection.promise().execute("SELECT * FROM books");
+      res.json(rows);
+    }
   } catch (error) {
     res.json(error);
   }
