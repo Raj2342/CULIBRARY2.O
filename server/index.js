@@ -8,7 +8,6 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 const connection = require("./config/connection");
-
 const app = express();
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "access.log"),
@@ -28,20 +27,39 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 // file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/assests");
+    cb(null, "./uploads");
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    cb(null, Date.now() + file.originalname);
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 // routes
-app.post("/api/books", (req, res) => {
-  const { name, linnk } = req.body;
-  res.json({ name, linnk });
-});
+app.post(
+  "/api/books",
+  upload.fields([
+    { name: "book_pdf", maxCount: 1 },
+    { name: "book_img", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { book_pdf, book_img } = req.files;
+      const pdf = book_pdf[0].path;
+      const image = book_img[0].path;
+      const { title, desc, genre, author } = req.body;
+      await connection.promise().execute(
+        `INSERT INTO books(title, des, image, pdf, genre, author) 
+            VALUES(?,?,?,?,?,?)`,
+        [title, desc, image, pdf, genre, author]
+      );
+      res.redirect("http://localhost:5173/");
+    } catch (error) {
+      res.json(error);
+    }
+  }
+);
 
 app.get("/api/books", async (req, res) => {
   try {
